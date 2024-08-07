@@ -2,3 +2,4 @@
 *.bin
 *.axf
 .gdb_history
+build

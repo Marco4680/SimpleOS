@@ -17,6 +17,14 @@ void main(void)
 
     putstr("Hello World!\n");
 
+    i = 100;
+    while (i--)
+    {
+        uint8_t ch = Hal_uart_get_char();
+        Hal_uart_put_char(ch);
+    }
+    
+
 }
 
 static void Hw_init(void)

@@ -5,7 +5,7 @@ TARGET = rvpb
 
 CC = arm-none-eabi-gcc
 AS = arm-none-eabi-as
-LD = arm-none-eabi-ld
+LD = arm-none-eabi-gcc
 OC = arm-none-eabi-objcopy
 
 LINKER_SCRIPT = ./spos.ld
@@ -30,6 +30,8 @@ INC_DIRS  = -I include			\
 
 CFLAGS = -c -g -std=c11
 
+LDFLAGS = -nostartfiles -nostdlib -nodefaultlibs -static -lgcc
+
 spos = build/spos.axf
 spos_bin = build/spos.bin
 
@@ -52,7 +54,7 @@ gdb:
 	arm-none-eabi-gdb
 
 $(spos): $(ASM_OBJS) $(C_OBJS) $(LINKER_SCRIPT)
-	$(LD) -n -T $(LINKER_SCRIPT) -o $(spos) $(ASM_OBJS) $(C_OBJS) -Map=$(MAP_FILE)
+	$(LD) -n -T $(LINKER_SCRIPT) -o $(spos) $(ASM_OBJS) $(C_OBJS) -Wl,-Map=$(MAP_FILE) $(LDFLAGS)
 	$(OC) -O binary $(spos) $(spos_bin)
 
 build/%.os: %.S

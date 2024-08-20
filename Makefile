@@ -16,17 +16,20 @@ ASM_OBJS = $(patsubst boot/%.S, build/%.os, $(ASM_SRCS))
 
 VPATH = boot			\
 		hal/$(TARGET)	\
-		lib
+		lib				\
+		kernel
 
 C_SRCS = $(notdir $(wildcard boot/*.c))
 C_SRCS += $(notdir $(wildcard hal/$(TARGET)/*.c))
 C_SRCS += $(notdir $(wildcard lib/*.c))
+C_SRCS += $(notdir $(wildcard kernel/*.c))
 C_OBJS = $(patsubst %.c, build/%.o, $(C_SRCS))
 
 INC_DIRS  = -I include			\
 			-I hal				\
 			-I hal/$(TARGET)	\
-			-I lib
+			-I lib				\
+			-I kernel
 
 CFLAGS = -c -g -std=c11
 
@@ -48,7 +51,7 @@ run: $(spos)
 	qemu-system-arm -M realview-pb-a8 -kernel $(spos) -nographic
 
 debug: $(spos)
-	qemu-system-arm -M realview-pb-a8 -kernel $(spos) -S -gdb tcp::1234,ipv4
+	qemu-system-arm -M realview-pb-a8 -kernel $(spos) -nographic -S -gdb tcp::1234,ipv4
 
 gdb:
 	arm-none-eabi-gdb

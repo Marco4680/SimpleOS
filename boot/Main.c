@@ -34,7 +34,7 @@ void main(void)
     putstr("Hello World!\n");
 
     Printf_test();
-    // Timer_test();
+    Timer_test();
 
     Kernel_init();
 
@@ -62,6 +62,7 @@ static void Kernel_init(void)
     uint32_t taskId;
 
     Kernel_task_init();
+    Kernel_event_flag_init();
 
     taskId = Kernel_task_create(User_task0);
     if(NOT_ENOUGH_TASK_NUM == taskId) {
@@ -100,7 +101,8 @@ static void Printf_test(void)
 
 static void Timer_test(void)
 {
-    while (true)
+    // while (true)
+    for(uint32_t i = 0; i < 5; i++)
     {
         debug_printf("current count : %u\n", Hal_timer_get_1ms_counter());
         delay(1000);
@@ -112,10 +114,29 @@ void User_task0(void)
 {
     uint32_t local = 0x4141;
 
-    debug_printf("User Task #0\n");
+    debug_printf("User Task #0 SP=0x%x\n", &local);
 
     while(true) {
-        debug_printf("User Task #0 SP=0x%x\n", &local);
+        bool pending_event = true;
+
+        while(pending_event) {
+            KernelEventFlag_t handle_event = Kernel_wait_events(KernelEventFlag_UartIn|KernelEventFlag_CmdOut);
+            switch(handle_event)
+            {
+                case KernelEventFlag_UartIn:
+                    debug_printf("\nEvent handled by Task0\n");
+                    // Kernel_send_events(KernelEventFlag_CmdIn);
+                    break;
+                case KernelEventFlag_CmdOut:
+                    debug_printf("\nCmdOut Event by Task0\n");
+                    break;
+                default:
+                    pending_event = false;
+                    break;
+            }
+
+        }
+
         Kernel_yield();
     }
 }
@@ -124,10 +145,17 @@ void User_task1(void)
 {
     uint32_t local = 0x4242;
 
-    debug_printf("User Task #1\n");
+    debug_printf("User Task #1 SP=0x%x\n", &local);
 
     while(true) {
-        debug_printf("User Task #1 SP=0x%x\n", &local);
+        KernelEventFlag_t handle_event = Kernel_wait_events(KernelEventFlag_CmdIn);
+        switch(handle_event)
+        {
+            case KernelEventFlag_CmdIn:
+                debug_printf("\nEvent handled by Task1\n");
+                break;
+        }
+
         Kernel_yield();
     }
 }
@@ -136,10 +164,9 @@ void User_task2(void)
 {
     uint32_t local = 0x4343;
 
-    debug_printf("User Task #2\n");
+    debug_printf("User Task #2 SP=0x%x\n", &local);
 
     while(true) {
-        debug_printf("User Task #2 SP=0x%x\n", &local);
         Kernel_yield();
     }
 }
